@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>东方红魔乡角色猜谜 | GitHub Pages版</title>
+    <title>东方红魔乡 - 角色数据链猜谜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* 基础样式和主题 */
+        /* 全局/基础样式 */
+        :root {
+            --color-primary: #FF44AA; /* 霓虹粉 */
+            --color-secondary: #44FFFF; /* 霓虹青 */
+            --color-bg-dark: #1A1A2E;
+            --color-bg-glass: rgba(45, 45, 68, 0.7); /* 半透明深色 */
+            --color-success: #48E88E;
+            --color-error: #FF5555;
+            --font-main: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5; /* 浅灰背景 */
-            color: #333;
+            font-family: var(--font-main);
+            background-color: var(--color-bg-dark);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231A1A2E"/><circle cx="50" cy="50" r="1" fill="%2344FFFF" opacity="0.3"/></svg>');
+            color: #f0f0f0;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -17,78 +29,91 @@
             align-items: flex-start;
             min-height: 100vh;
         }
+
+        /* 毛玻璃容器 */
         .container {
-            background-color: #ffffff; /* 白色容器背景 */
+            background-color: var(--color-bg-glass);
+            backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            max-width: 650px;
             width: 100%;
             transition: all 0.3s ease;
         }
+
         h1 {
             text-align: center;
-            color: #8b0000; /* 深红标题 */
+            color: var(--color-primary);
+            text-shadow: 0 0 8px rgba(255, 68, 170, 0.7);
             margin-bottom: 25px;
             font-size: 1.8em;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
+            letter-spacing: 2px;
         }
 
-        /* 状态和统计 */
+        /* 状态栏 */
         .status-bar {
-            background-color: #fff3cd; /* 浅黄背景 */
-            color: #856404; /* 深黄文字 */
+            background-color: rgba(68, 255, 255, 0.1);
+            color: var(--color-secondary);
             padding: 10px;
             border-radius: 8px;
+            border: 1px solid var(--color-secondary);
             margin-bottom: 20px;
-            font-weight: bold;
             text-align: center;
+            font-weight: bold;
         }
+
+        /* 统计信息 */
         .stats {
             display: flex;
             justify-content: space-around;
             margin-bottom: 20px;
             padding: 10px 0;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
         }
         .stats div {
             text-align: center;
             font-size: 1.1em;
-            color: #555;
+            color: #ccc;
         }
         .stats span {
             font-weight: bold;
-            color: #8b0000; /* 分数使用主题色 */
+            color: var(--color-primary);
+            text-shadow: 0 0 5px rgba(255, 68, 170, 0.5);
             display: block;
             margin-top: 5px;
+            font-size: 1.3em;
         }
 
         /* 图片显示区 */
         .image-box {
             width: 100%;
-            height: 350px;
-            background-color: #2c3e50; /* 深色背景，突出图片 */
+            height: 380px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--color-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 20px 0;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             position: relative;
         }
         #characterImage {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 90%;
+            max-height: 90%;
             object-fit: contain;
             display: none;
             transition: opacity 0.5s;
+            image-rendering: pixelated; /* 保持像素艺术风格 */
         }
         #loading {
-            color: #fff;
+            color: var(--color-secondary);
             text-align: center;
             font-size: 1.2em;
+            text-shadow: 0 0 5px rgba(68, 255, 255, 0.5);
         }
 
         /* 输入和按钮 */
@@ -99,63 +124,73 @@
         }
         input {
             flex-grow: 1;
-            padding: 10px 15px;
-            border: 2px solid #ccc;
-            border-radius: 6px;
+            padding: 12px 15px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--color-primary);
+            color: #fff;
+            border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.3s;
+            font-family: inherit;
         }
         input:focus {
-            border-color: #8b0000;
+            border-color: var(--color-secondary);
             outline: none;
-            box-shadow: 0 0 5px rgba(139, 0, 0, 0.3);
+            box-shadow: 0 0 10px rgba(68, 255, 255, 0.5);
         }
         button {
             padding: 10px 20px;
-            background-color: #8b0000;
-            color: white;
+            background-color: var(--color-primary);
+            color: #000;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
             font-weight: bold;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 5px var(--color-primary);
+            font-family: inherit;
         }
         button:hover {
-            background-color: #a02020;
+            background-color: #FF66BB;
+            box-shadow: 0 0 10px #FF66BB;
         }
         button:active {
-            transform: translateY(1px);
+            transform: translateY(2px);
         }
         button:disabled {
-            background-color: #ccc;
+            background-color: #333;
+            color: #888;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         /* 反馈信息 */
         .feedback {
             padding: 12px;
             margin: 10px 0;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             display: none;
             text-align: center;
             transition: opacity 0.3s;
+            text-shadow: 0 0 3px #000;
         }
         .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: rgba(72, 232, 142, 0.2);
+            color: var(--color-success);
+            border: 1px solid var(--color-success);
         }
         .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background-color: rgba(255, 85, 85, 0.2);
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
         }
         .info {
-            background-color: #cce5ff;
-            color: #004085;
-            border: 1px solid #b8daff;
+            background-color: rgba(68, 255, 255, 0.2);
+            color: var(--color-secondary);
+            border: 1px solid var(--color-secondary);
         }
         
         /* 游戏控制按钮组 */
@@ -169,10 +204,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>东方红魔乡角色猜谜</h1>
+        <h1>// 幻想乡数据链 //</h1>
         
         <div class="status-bar" id="status">
-            请点击 "开始游戏"
+            SYSTEM: 等待启动指令...
         </div>
         
         <div class="stats">
@@ -182,40 +217,40 @@
         </div>
         
         <div class="image-box">
-            <div id="loading">点击下方开始按钮</div>
-            <img id="characterImage" alt="角色图片">
+            <div id="loading">点击下方 START 按钮</div>
+            <img id="characterImage" alt="角色数据投影">
         </div>
         
         <div class="feedback" id="feedback"></div>
         
         <div class="controls">
-            <input type="text" id="answerInput" placeholder="请输入角色名称（如：蕾米莉亚）" disabled>
-            <button id="submitBtn" disabled>提交答案</button>
+            <input type="text" id="answerInput" placeholder="输入角色识别码 (文件名中的连续部分)" disabled>
+            <button id="submitBtn" disabled>提交 [EXEC]</button>
         </div>
         
         <div class="game-controls">
-            <button id="startBtn">开始游戏</button>
-            <button id="nextBtn" style="display: none;">下一题</button>
+            <button id="startBtn">START</button>
+            <button id="nextBtn" style="display: none;">下一题 >>></button>
         </div>
     </div>
 
     <script>
         // --- 核心配置：角色列表 ---
-        // 注意：这里的 'name' 必须与你图片文件夹下的图片文件名（不含扩展名）完全一致
-        // 'path' 是图片在 GitHub Pages 上的相对路径
+        // 注意：现在我们只关心 filename (带扩展名) 和 path。
+        // 正确答案将由 filename (去扩展名) 动态生成。
         const characters = [
-            { name: '博丽灵梦', filename: '博丽灵梦.png', path: 'resources/东方红魔乡/博丽灵梦.png' },
-            { name: '雾雨魔理沙', filename: '雾雨魔理沙.png', path: 'resources/东方红魔乡/雾雨魔理沙.png' },
-            { name: '露米娅', filename: '露米娅.png', path: 'resources/东方红魔乡/露米娅.png' },
-            { name: '大妖精', filename: '大妖精.png', path: 'resources/东方红魔乡/大妖精.png' },
-            { name: '琪露诺', filename: '琪露诺.png', path: 'resources/东方红魔乡/琪露诺.png' },
-            { name: '美铃', filename: '美铃.png', path: 'resources/东方红魔乡/红美铃.png' },
-            { name: '小恶魔', filename: '小恶魔.png', path: 'resources/东方红魔乡/小恶魔.png' },
-            { name: '帕秋莉', filename: '帕秋莉.png', path: 'resources/东方红魔乡/帕秋莉·诺蕾姬.png' },
-            { name: '咲夜', filename: '十六夜咲夜.png', path: 'resources/东方红魔乡/十六夜咲夜.png' },
-            { name: '蕾米莉亚', filename: '蕾米莉亚.png', path: 'resources/东方红魔乡/蕾米莉亚·斯卡蕾特.png' },
-            { name: '芙兰朵露', filename: '芙兰朵露.png', path: 'resources/东方红魔乡/芙兰朵露·斯卡蕾特.png' }
-            // !!! 请根据您实际的图片文件和名称在这里补充或修改列表 !!!
+            { filename: '博丽灵梦.png', path: 'resources/东方红魔乡/博丽灵梦.png' },
+            { filename: '雾雨魔理沙.png', path: 'resources/东方红魔乡/雾雨魔理沙.png' },
+            { filename: '露米娅.png', path: 'resources/东方红魔乡/露米娅.png' },
+            { filename: '大妖精.png', path: 'resources/东方红魔乡/大妖精.png' },
+            { filename: '琪露诺.png', path: 'resources/东方红魔乡/琪露诺.png' },
+            { filename: '红美铃.png', path: 'resources/东方红魔乡/红美铃.png' },
+            { filename: '小恶魔.png', path: 'resources/东方红魔乡/小恶魔.png' },
+            { filename: '帕秋莉·诺蕾姬.png', path: 'resources/东方红魔乡/帕秋莉·诺蕾姬.png' },
+            { filename: '十六夜咲夜.png', path: 'resources/东方红魔乡/十六夜咲夜.png' },
+            { filename: '蕾米莉亚·斯卡蕾特.png', path: 'resources/东方红魔乡/蕾米莉亚·斯卡蕾特.png' },
+            { filename: '芙兰朵露·斯卡蕾特.png', path: 'resources/东方红魔乡/芙兰朵露·斯卡蕾特.png' }
+            // !!! 请根据您实际的图片文件在这里补充或修改列表 !!!
         ];
 
         // --- 全局变量和DOM元素 ---
@@ -223,11 +258,7 @@
         let usedIndices = [];      
         let isGameActive = false;
         
-        let gameStats = {
-            correct: 0,
-            wrong: 0,
-            score: 0
-        };
+        let gameStats = { correct: 0, wrong: 0, score: 0 };
 
         const statusEl = document.getElementById('status');
         const startBtn = document.getElementById('startBtn');
@@ -245,7 +276,7 @@
 
         startBtn.addEventListener('click', () => {
             if (characters.length === 0) {
-                showFeedback('错误：未配置角色列表！请修改代码中的`characters`数组。', 'error');
+                showFeedback('FATAL ERROR: 角色数据库为空!', 'error');
                 return;
             }
             // 初始化游戏状态
@@ -256,18 +287,19 @@
             
             // UI更新
             startBtn.style.display = 'none';
-            nextBtn.textContent = '跳过 / 下一题';
+            nextBtn.textContent = 'SKIP >>';
             
             // 开始游戏
             loadNextCharacter();
         });
 
         nextBtn.addEventListener('click', () => {
-             // 如果当前是待猜状态，点击下一题算作跳过（错误）
+            // 如果当前是待猜状态，点击下一题算作跳过（错误）
             if (answerInput.disabled === false && currentCharacter) {
-                gameStats.wrong++; // 算作一次错误
+                const correctAnswer = getCorrectName(currentCharacter.filename);
+                gameStats.wrong++; 
                 updateStats();
-                showFeedback(`跳过当前题目。正确答案是 ${currentCharacter.name}`, 'error');
+                showFeedback(`SKIP: 正确识别码是 [${correctAnswer}]`, 'error');
             }
             loadNextCharacter();
         });
@@ -279,7 +311,46 @@
             }
         });
 
-        // --- 核心函数 ---
+        // --- 辅助函数 ---
+
+        // 从文件名中提取正确的角色名称 (去除非字符部分，例如 .png)
+        function getCorrectName(filename) {
+            // 匹配直到最后一个点号('.')之前的所有内容
+            return filename.replace(/\.[^/.]+$/, '');
+        }
+
+        // 检查答案：部分关键词匹配
+        function checkAnswer() {
+            if (!currentCharacter || answerInput.disabled) return;
+
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctName = getCorrectName(currentCharacter.filename);
+            const correctNameLower = correctName.toLowerCase();
+
+            // 检查：玩家输入是否是正确答案的连续子串
+            const isCorrect = correctNameLower.includes(userAnswer) && userAnswer.length > 0;
+
+            // UI和状态更新
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+            nextBtn.style.display = 'inline-block';
+            nextBtn.textContent = 'NEXT TILE >>';
+
+            // 更新统计
+            if (isCorrect) {
+                gameStats.correct++;
+                gameStats.score += 100;
+                showFeedback(`CORRECT! +100pts (答案: ${correctName})`, 'success');
+            } else {
+                gameStats.wrong++;
+                showFeedback(`INCORRECT. (正确识别码: ${correctName})`, 'error');
+            }
+
+            updateStats();
+        }
+
+
+        // --- 核心游戏逻辑 ---
 
         // 加载下一个角色
         function loadNextCharacter() {
@@ -292,14 +363,12 @@
             submitBtn.disabled = false;
             nextBtn.style.display = 'none';
             characterImage.style.display = 'none';
-            loadingEl.textContent = '加载图片中...';
-            nextBtn.textContent = '跳过 / 下一题';
+            loadingEl.textContent = 'INITIATING DATA STREAM...';
 
             // 检查是否所有角色都猜过
             if (usedIndices.length >= characters.length) {
                 usedIndices = [];
-                statusEl.textContent = '状态：已轮完所有角色，重置牌堆。';
-                // 可以考虑在这里结束游戏并显示最终得分
+                statusEl.textContent = 'STATUS: DATA LOOP COMPLETE. REINITIALIZING INDEX.';
             }
             
             // 随机选择一个未使用的角色
@@ -312,54 +381,25 @@
             currentCharacter = characters[randomIndex];
 
             // 设置图片路径
-            // 注意：path 属性是您配置在 characters 数组中的，用于 GitHub Pages 的相对路径
             characterImage.src = currentCharacter.path;
 
             // 图片加载成功
             characterImage.onload = () => {
                 loadingEl.textContent = '';
                 characterImage.style.display = 'block';
-                statusEl.textContent = `状态：请猜测角色名称 (第 ${usedIndices.length} 题)`;
+                statusEl.textContent = `STATUS: GUESS CHARACTER CODE (ID: ${usedIndices.length}/${characters.length})`;
                 answerInput.focus();
             };
 
-            // 图片加载失败
+            // 图片加载失败 (通常是路径错误)
             characterImage.onerror = () => {
-                loadingEl.textContent = `图片加载失败！请检查路径：${currentCharacter.path}`;
-                statusEl.textContent = `状态：图片加载失败 (检查路径配置)`;
-                showFeedback(`无法加载图片: ${currentCharacter.path}，已自动跳过。`, 'error');
+                loadingEl.textContent = `LOAD FAILED: ${currentCharacter.filename}`;
+                statusEl.textContent = `ERROR: 无法加载图片，路径检查失败！`;
+                showFeedback(`LOAD ERROR: 无法加载图片: ${currentCharacter.path}，自动跳过。`, 'error');
                 
                 // 自动跳过，加载下一题
                 setTimeout(loadNextCharacter, 2000); 
             };
-        }
-
-        // 检查答案
-        function checkAnswer() {
-            if (!currentCharacter || answerInput.disabled) return;
-
-            const userAnswer = answerInput.value.trim();
-            // 匹配逻辑：答案与角色的 'name' 属性完全一致
-            const correctAnswer = currentCharacter.name;
-            const isCorrect = userAnswer === correctAnswer;
-
-            // UI和状态更新
-            answerInput.disabled = true;
-            submitBtn.disabled = true;
-            nextBtn.style.display = 'inline-block';
-            nextBtn.textContent = '下一题';
-
-            // 更新统计
-            if (isCorrect) {
-                gameStats.correct++;
-                gameStats.score += 100;
-                showFeedback(`正确！答案是 ${correctAnswer}，加100分！`, 'success');
-            } else {
-                gameStats.wrong++;
-                showFeedback(`错误！正确答案是 ${correctAnswer}`, 'error');
-            }
-
-            updateStats();
         }
 
         // 显示反馈信息
@@ -379,10 +419,10 @@
         // 初始状态提示
         window.onload = () => {
             if (characters.length === 0) {
-                statusEl.textContent = '状态：未配置角色列表，请检查代码！';
+                statusEl.textContent = 'SYSTEM: ERROR! DATA FILE EMPTY.';
                 startBtn.disabled = true;
             } else {
-                 statusEl.textContent = `状态：已加载 ${characters.length} 个角色。请点击开始游戏。`;
+                 statusEl.textContent = `SYSTEM: ${characters.length} CHARACTERS LOADED. PRESS START.`;
             }
         };
     </script>
