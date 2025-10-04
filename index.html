@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>东方红魔乡角色猜谜（修复版）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a2e;
+            color: #f0f0f0;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #2d2d44;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .status {
+            color: #DAA520;
+            padding: 10px;
+            border: 1px solid #444;
+            margin: 10px 0;
+        }
+        .image-box {
+            width: 100%;
+            height: 400px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        #characterImage {
+            max-width: 90%;
+            max-height: 90%;
+            display: none;
+        }
+        #loading {
+            color: #fff;
+            text-align: center;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        input {
+            padding: 8px;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #8B0000;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #8B0000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .feedback {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: rgba(0, 255, 0, 0.2);
+            border: 1px solid green;
+        }
+        .error {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid red;
+        }
+        .info {
+            background-color: rgba(0, 0, 255, 0.2);
+            border: 1px solid blue;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #DAA520;">东方红魔乡角色猜谜</h1>
+        
+        <!-- 状态和错误信息区 -->
+        <div class="status" id="status">
+            状态：等待初始化...
+        </div>
+        
+        <!-- 统计信息 -->
+        <div class="stats">
+            <div>正确: <span id="correctCount">0</span></div>
+            <div>错误: <span id="wrongCount">0</span></div>
+            <div>得分: <span id="score">0</span></div>
+        </div>
+        
+        <!-- 图片显示区 -->
+        <div class="image-box">
+            <div id="loading">请点击"开始游戏"</div>
+            <img id="characterImage" alt="角色图片">
+        </div>
+        
+        <!-- 输入区 -->
+        <div class="controls">
+            <input type="text" id="answerInput" placeholder="请输入角色名称（图片文件名）">
+            <button id="submitBtn">提交</button>
+        </div>
+        
+        <!-- 反馈信息 -->
+        <div class="feedback" id="feedback"></div>
+        
+        <!-- 控制按钮 -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="startBtn">开始游戏</button>
+            <button id="nextBtn" style="display: none;">下一题</button>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let characters = [];       // 角色列表
+        let currentCharacter = null; // 当前角色
+        let usedIndices = [];      // 已使用的角色索引
+        let gameStats = {
+            correct: 0,
+            wrong: 0,
+            score: 0
+        };
+
+        // DOM元素
+        const statusEl = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const answerInput = document.getElementById('answerInput');
+        const characterImage = document.getElementById('characterImage');
+        const loadingEl = document.getElementById('loading');
+        const feedbackEl = document.getElementById('feedback');
+        const correctCountEl = document.getElementById('correctCount');
+        const wrongCountEl = document.getElementById('wrongCount');
+        const scoreEl = document.getElementById('score');
+
+        // 初始化：从服务器获取角色列表
+        async function init() {
+            try {
+                statusEl.textContent = "状态：正在从服务器获取角色列表...";
+                
+                // 调用服务器接口获取角色列表
+                const response = await fetch('/get-characters');
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`服务器返回错误: ${response.status}`);
+                }
+                
+                // 解析JSON数据
+                const data = await response.json();
+                
+                // 检查是否有错误信息
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // 保存角色列表
+                characters = data;
+                
+                // 显示获取结果
+                if (characters.length === 0) {
+                    statusEl.textContent = `状态：未找到角色图片，请检查 ${'/resources/东方红魔乡'} 目录`;
+                    statusEl.style.color = '#ff4444';
+                    startBtn.disabled = true;
+                } else {
+                    statusEl.textContent = `状态：成功加载 ${characters.length} 个角色图片`;
+                    statusEl.style.color = '#4CAF50';
+                    startBtn.disabled = false;
+                }
+                
+            } catch (error) {
+                statusEl.textContent = `初始化失败: ${error.message}`;
+                statusEl.style.color = '#ff4444';
+                showFeedback(`错误: ${error.message}`, 'error');
+                console.error('初始化错误:', error);
+            }
+        }
+
+        // 开始游戏
+        startBtn.addEventListener('click', () => {
+            // 重置游戏状态
+            gameStats = { correct: 0, wrong: 0, score: 0 };
+            usedIndices = [];
+            updateStats();
+            
+            // 开始第一题
+            loadNextCharacter();
+            
+            // 隐藏开始按钮
+            startBtn.style.display = 'none';
+        });
+
+        // 下一题
+        nextBtn.addEventListener('click', loadNextCharacter);
+
+        // 提交答案
+        submitBtn.addEventListener('click', checkAnswer);
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        // 加载下一个角色
+        function loadNextCharacter() {
+            // 重置状态
+            feedbackEl.style.display = 'none';
+            answerInput.value = '';
+            nextBtn.style.display = 'none';
+            answerInput.disabled = false;
+            characterImage.style.display = 'none';
+            loadingEl.textContent = '加载图片中...';
+
+            // 如果所有角色都用过了，重置已使用列表
+            if (usedIndices.length >= characters.length) {
+                usedIndices = [];
+                showFeedback('已轮完所有角色，重新开始', 'info');
+            }
+
+            // 随机选择一个未使用的角色
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * characters.length);
+            } while (usedIndices.includes(randomIndex));
+            
+            usedIndices.push(randomIndex);
+            currentCharacter = characters[randomIndex];
+
+            // 显示当前加载的图片信息（调试用）
+            statusEl.textContent = `状态：正在加载 ${currentCharacter.filename}`;
+            
+            // 设置图片路径
+            const imagePath = `resources/东方红魔乡/${currentCharacter.filename}`;
+            characterImage.src = imagePath;
+
+            // 图片加载成功
+            characterImage.onload = () => {
+                loadingEl.textContent = '';
+                characterImage.style.display = 'block';
+                statusEl.textContent = `状态：请猜测角色名称 (当前第 ${usedIndices.length} 题)`;
+                answerInput.focus();
+            };
+
+            // 图片加载失败
+            characterImage.onerror = () => {
+                loadingEl.textContent = `图片加载失败: ${currentCharacter.filename}`;
+                statusEl.textContent = `状态：加载 ${currentCharacter.filename} 失败`;
+                showFeedback(`无法加载图片: ${imagePath}`, 'error');
+            };
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            if (!currentCharacter) return;
+
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = currentCharacter.name;
+            const isCorrect = userAnswer === correctAnswer;
+
+            // 更新统计
+            if (isCorrect) {
+                gameStats.correct++;
+                gameStats.score += 100;
+                showFeedback(`正确！答案是 ${correctAnswer}，加100分！`, 'success');
+            } else {
+                gameStats.wrong++;
+                showFeedback(`错误！正确答案是 ${correctAnswer}`, 'error');
+            }
+
+            // 更新显示
+            updateStats();
+            answerInput.disabled = true;
+            nextBtn.style.display = 'inline-block';
+        }
+
+        // 显示反馈信息
+        function showFeedback(message, type) {
+            feedbackEl.textContent = message;
+            feedbackEl.className = `feedback ${type}`;
+            feedbackEl.style.display = 'block';
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            correctCountEl.textContent = gameStats.correct;
+            wrongCountEl.textContent = gameStats.wrong;
+            scoreEl.textContent = gameStats.score;
+        }
+
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
